@@ -7,11 +7,17 @@
 #include <zmk/event_manager.h>
 #include <zmk/ble.h>
 #include <zmk/events/ble_active_profile_changed.h>
+/* Fallback if CONFIG_BT_DEVICE_NAME_MAX isn't defined in this build */
+#ifndef CONFIG_BT_DEVICE_NAME_MAX
+#define PROFILE_NAMER_NAME_MAX 31  /* safe default; adjust if you want longer names */
+#else
+#define PROFILE_NAMER_NAME_MAX CONFIG_BT_DEVICE_NAME_MAX
+#endif
 
 #if !defined(CONFIG_ZMK_SPLIT) || IS_ENABLED(CONFIG_ZMK_SPLIT_ROLE_CENTRAL)
 
 static void set_name_for_profile(uint8_t index_zero_based) {
-    char new_name[CONFIG_BT_DEVICE_NAME_MAX];
+    char new_name[PROFILE_NAMER_NAME_MAX];
     snprintf(new_name, sizeof(new_name), "keyboard_%u", (unsigned)(index_zero_based + 1));
 
     /* 1) Update GAP device name */
