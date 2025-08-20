@@ -1,0 +1,3 @@
+name: zmk-profile-namer
+build:
+  cmake: .
