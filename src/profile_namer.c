@@ -14,16 +14,26 @@ static void set_name_for_profile(uint8_t index_zero_based) {
     char new_name[CONFIG_BT_DEVICE_NAME_MAX];
     snprintf(new_name, sizeof(new_name), "keyboard_%u", (unsigned)(index_zero_based + 1));
 
+    /* 1) Update GAP device name */
     bt_set_name(new_name);
 
-    static const struct bt_data ad[] = {
+    /* 2) Refresh advertising/scan-response so scanners see the new name */
+    /* NOTE: do NOT make these 'static' inside a function, or you'll hit
+       "initializer element is not constant" with BT_DATA_BYTES. */
+    const struct bt_data ad[] = {
         BT_DATA_BYTES(BT_DATA_FLAGS, (BT_LE_AD_GENERAL | BT_LE_AD_NO_BREDR)),
     };
     struct bt_data sd[] = {
         BT_DATA(BT_DATA_NAME_COMPLETE, new_name, strlen(new_name)),
     };
-    bt_le_adv_update_data(ad, ARRAY_SIZE(ad), sd, ARRAY_SIZE(sd));
+
+    int err = bt_le_adv_update_data(ad, ARRAY_SIZE(ad), sd, ARRAY_SIZE(sd));
+    if (err) {
+        /* Optional: log or handle; you can include <zephyr/logging/log.h> if desired */
+        // LOG_WRN("bt_le_adv_update_data failed: %d", err);
+    }
 }
+
 
 static int profile_change_listener(const zmk_event_t *eh) {
     const struct zmk_ble_active_profile_changed *evt =
