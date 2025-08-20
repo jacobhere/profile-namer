@@ -13,6 +13,18 @@
 #else
 #define PROFILE_NAMER_NAME_MAX CONFIG_BT_DEVICE_NAME_MAX
 #endif
+#include <zephyr/sys/util.h>   // IS_ENABLED
+
+#if IS_ENABLED(CONFIG_ZMK_BLE)
+
+  /* current includes and implementation */
+
+#else
+  /* No BLE in this build; keep a tiny stub so the module links cleanly. */
+  #include <zmk/event_manager.h>
+  static int profile_change_listener(const zmk_event_t *eh) { return 0; }
+  ZMK_LISTENER(profile_namer, profile_change_listener);
+#endif
 
 #if !defined(CONFIG_ZMK_SPLIT) || IS_ENABLED(CONFIG_ZMK_SPLIT_ROLE_CENTRAL)
 
